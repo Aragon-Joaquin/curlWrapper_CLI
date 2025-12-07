@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -39,19 +42,24 @@ var (
 	errorBadURL      = errors.New("the url provided is wrong")
 )
 
-func MakeHTTPCall(URL string, httpMethod HTTPMethod) error {
-	goodUrl, err := url.Parse(URL)
+type RequestJson struct {
+	*http.Response
+	ParsedBody string
+}
+
+func MakeHTTPCall() (*RequestJson, error) {
+	goodUrl, err := url.Parse(GlobalFieldState.URLField)
 
 	if err != nil {
-		slog.Warn("Error while parsing URL", "Err", err.Error())
-		return errorBadURL
+		slog.Error("Error while parsing URL", "Err", err.Error())
+		return nil, errorBadURL
 	}
 
-	method, ok := httpMethodMap[httpMethod]
+	method, ok := httpMethodMap[GlobalFieldState.MethodField]
 
 	if !ok {
-		slog.Warn("Error while parsing METHOD", "Method", httpMethod)
-		return errorWrongMethod
+		slog.Error("Error while parsing METHOD", "Method", GlobalFieldState.MethodField)
+		return nil, errorWrongMethod
 	}
 
 	resp, err := customClient.Do(&http.Request{
@@ -60,11 +68,42 @@ func MakeHTTPCall(URL string, httpMethod HTTPMethod) error {
 	})
 
 	if err != nil {
-		slog.Warn("Error while doing request", "Err", err.Error())
-		return err
+		slog.Error("Error while doing request", "Err", err.Error())
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
-	return nil
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		slog.Error("Error while reading body", "Err", err.Error())
+		return nil, err
+	}
+
+	var prettyJSON bytes.Buffer
+
+	if IsJSON(string(body)) {
+		err = json.Indent(&prettyJSON, body, "", "\t")
+
+		if err != nil {
+			slog.Error("Error while prettifying JSON", "Err", err.Error(), "JSON", body)
+			return nil, err
+		}
+
+		return &RequestJson{
+			ParsedBody: prettyJSON.String(),
+			Response:   resp,
+		}, nil
+	}
+
+	return &RequestJson{
+		ParsedBody: string(body),
+		Response:   resp,
+	}, nil
+}
+
+func IsJSON(str string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(str), &js) == nil
 }
