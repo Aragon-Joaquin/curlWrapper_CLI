@@ -1,4 +1,4 @@
-package logger
+package main
 
 import (
 	"fmt"
@@ -24,11 +24,11 @@ func init() {
 	logDir = wd
 }
 
-func DefaultPath() string {
+func LoggerDefaultPath() string {
 	return filepath.Join(logDir, fileName)
 }
 
-func Load(path string, level slog.Level) error {
+func LoggerLoad(path string, level slog.Level) error {
 	_, err := os.Stat(filepath.Join(logDir, fileName))
 
 	if os.IsNotExist(err) {

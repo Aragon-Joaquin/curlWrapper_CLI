@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/Aragon-Joaquin/curlWrapper_CLI/logger"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -14,12 +13,8 @@ const (
 	DEFAULT_URL_EXAMPLE = "http://localhost:5172"
 )
 
-var (
-	HTTP_METHODS = []string{"GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"}
-)
-
 func main() {
-	err := logger.Load(logger.DefaultPath(), slog.LevelDebug)
+	err := LoggerLoad(LoggerDefaultPath(), slog.LevelDebug)
 
 	if err != nil {
 		panic(err)
@@ -57,7 +52,7 @@ func main() {
 
 	methodDMenu := tview.NewDropDown().
 		SetLabel("HTTP Method: ").
-		SetOptions(HTTP_METHODS, func(text string, index int) {
+		SetOptions(ALL_HTTP_METHODS, func(text string, index int) {
 			slog.Debug("DropDown Changed: ", "TEXT", text, "INDEX", index)
 		}).
 		SetCurrentOption(0)
