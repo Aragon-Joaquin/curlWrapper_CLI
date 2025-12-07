@@ -9,31 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-)
 
-type HTTPMethod uint8
-
-const (
-	METHOD_GET HTTPMethod = iota
-	METHOD_POST
-	METHOD_DELETE
-	METHOD_PATCH
-	METHOD_PUT
-	METHOD_OPTIONS
+	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
 )
 
 var (
-	ALL_HTTP_METHODS = []string{"GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"}
-
-	httpMethodMap = map[HTTPMethod]string{
-		METHOD_GET:     http.MethodGet,
-		METHOD_POST:    http.MethodPost,
-		METHOD_DELETE:  http.MethodDelete,
-		METHOD_PATCH:   http.MethodPatch,
-		METHOD_PUT:     http.MethodPut,
-		METHOD_OPTIONS: http.MethodOptions,
-	}
-
 	customClient = &http.Client{
 		Timeout: time.Second * 4,
 	}
@@ -55,7 +35,7 @@ func MakeHTTPCall() (*RequestJson, error) {
 		return nil, errorBadURL
 	}
 
-	method, ok := httpMethodMap[GlobalFieldState.MethodField]
+	method, ok := ut.HTTPMethodMap[GlobalFieldState.MethodField]
 
 	if !ok {
 		slog.Error("Error while parsing METHOD", "Method", GlobalFieldState.MethodField)
