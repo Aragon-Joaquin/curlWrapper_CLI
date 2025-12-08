@@ -36,3 +36,8 @@ func CreateNewDynamicTextView() *tview.TextView {
 		SetDynamicColors(true).
 		SetRegions(true)
 }
+
+func CreateBodyInput() *tview.TextArea {
+	return tview.NewTextArea().
+		SetPlaceholder(utils.EXAMPLE_JSON)
+}

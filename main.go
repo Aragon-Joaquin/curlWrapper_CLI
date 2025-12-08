@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 type FieldState struct {
 	URLField    string
 	MethodField ut.HTTPMethod
+	Body        string
 }
 
 type ChannelInformation struct {
@@ -56,6 +58,57 @@ func main() {
 
 	form.SetBorder(true).SetTitle(ut.APP_NAME)
 
+	//reqBody
+	jsonIsValid := ui.CreateNewDynamicTextView()
+	keyMap := ui.CreateNewDynamicTextView()
+	reqBody := ui.CreateBodyInput()
+
+	reqBody.SetBorder(true).SetTitle("Write the JSON here")
+
+	jsonIsValid.SetText("Waiting for input...")
+	jsonIsValid.SetTextAlign(tview.AlignCenter)
+
+	keyMap.SetText("<ESC> to Unfocus")
+	keyMap.SetTextAlign(tview.AlignCenter)
+
+	reqBody.SetChangedFunc(func() {
+		//todo: add debouncer here
+		text := reqBody.GetText()
+
+		jsonIsValid.SetText("")
+		if len(text) < 2 {
+			fmt.Fprint(jsonIsValid, "[white]Waiting for input...[white]")
+			return
+		}
+
+		slog.Debug("TextArea is JSON: ", "Bool", IsJSON(text))
+		if IsJSON(text) {
+			GlobalFieldState.Body = text
+			fmt.Fprint(jsonIsValid, "[green]Valid JSON[white]")
+		} else {
+			GlobalFieldState.Body = ""
+			fmt.Fprint(jsonIsValid, "[red]Invalid JSON[white]")
+		}
+	})
+
+	reqBody.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyESC {
+			reqBody.Blur()
+		}
+		return event
+	})
+
+	reqBodyUtils := tview.NewGrid().
+		SetRows(0, 1).
+		AddItem(reqBody, 0, 0, 1, 2, 0, 0, true).
+		AddItem(jsonIsValid, 1, 0, 1, 1, 0, 0, false).
+		AddItem(keyMap, 1, 1, 1, 1, 0, 0, false)
+
+	flexRequest := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(form, 0, 1, true).
+		AddItem(reqBodyUtils, 0, 5, false)
+
 	//! json response layout
 	headerView := ui.CreateNewDynamicTextView()
 	bodyView := ui.CreateNewDynamicTextView()
@@ -72,7 +125,7 @@ func main() {
 
 	// final layout
 	mainBox := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(form, 0, 1, true).
+		AddItem(flexRequest, 0, 1, true).
 		AddItem(flexResponse, 0, 1, false)
 
 	if err := app.SetRoot(mainBox, true).Run(); err != nil {

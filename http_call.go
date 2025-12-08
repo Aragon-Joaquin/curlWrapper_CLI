@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
@@ -42,10 +43,23 @@ func MakeHTTPCall() (*RequestJson, error) {
 		return nil, errorWrongMethod
 	}
 
-	resp, err := customClient.Do(&http.Request{
+	httpRequest := &http.Request{
 		Method: method,
 		URL:    goodUrl,
-	})
+	}
+
+	if method != http.MethodGet && GlobalFieldState.Body != "" {
+		httpRequest.Header = http.Header{
+			"Content-Type": []string{"application/json", "charset=utf-8"},
+		}
+
+		r := io.NopCloser(strings.NewReader(GlobalFieldState.Body))
+		defer r.Close()
+
+		httpRequest.Body = r
+	}
+
+	resp, err := customClient.Do(httpRequest)
 
 	if err != nil {
 		slog.Error("Error while doing request", "Err", err.Error())

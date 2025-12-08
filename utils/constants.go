@@ -18,6 +18,25 @@ const (
 	METHOD_OPTIONS
 )
 
+const EXAMPLE_JSON string = `e.g.:
+{
+	"id": 123,
+	"name": "John Doe",
+	"jobs": [
+		"Registered Nurse",
+		"Teacher",
+		"Baker"
+	]
+	"parents": [
+		{
+			"id": 23
+		},
+		{
+			"id": 47
+		}, 
+	]
+}`
+
 var (
 	ALL_HTTP_METHODS = []string{"GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"}
 
