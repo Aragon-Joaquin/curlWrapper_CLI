@@ -20,10 +20,7 @@ func CreateDropDownMethods() *tview.DropDown {
 		SetCurrentOption(0)
 }
 
-func CreateFormMenu(items ...tview.FormItem) *tview.Form {
-	form := tview.NewForm().
-		SetButtonsAlign(tview.AlignCenter)
-
+func AddItemsFormMenu(form *tview.Form, items ...tview.FormItem) *tview.Form {
 	for _, box := range items {
 		form.AddFormItem(box)
 	}

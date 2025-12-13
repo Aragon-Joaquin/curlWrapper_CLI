@@ -7,15 +7,16 @@ import (
 
 	"github.com/Aragon-Joaquin/curlWrapper_CLI/ui"
 	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-type FieldState struct {
-	URLField    string
-	MethodField ut.HTTPMethod
-	Body        string
-}
+// modules
+var (
+	form       *tview.Form
+	headerView *tview.TextView
+	reqBody    *tview.TextArea
+	bodyView   *tview.TextView
+)
 
 type ChannelInformation struct {
 	Response  *RequestJson
@@ -23,9 +24,25 @@ type ChannelInformation struct {
 	IsLoading bool
 }
 
-var GlobalFieldState = &FieldState{}
-var app *tview.Application
+// ? init funcs
+func init() {
+	err := LoggerLoad(LoggerDefaultPath(), slog.LevelDebug)
 
+	if err != nil {
+		panic(err)
+	}
+}
+
+func init() {
+	headerView = ui.CreateNewDynamicTextView()
+	bodyView = ui.CreateNewDynamicTextView()
+	reqBody = ui.CreateBodyInput()
+	form = tview.NewForm().
+		SetButtonsAlign(tview.AlignCenter)
+
+}
+
+// ? entry point
 func main() {
 	resChannel := make(chan *ChannelInformation)
 
@@ -42,7 +59,7 @@ func main() {
 			GlobalFieldState.MethodField = ut.HTTPMethod(index)
 		})
 
-	form := ui.CreateFormMenu(urlInput, methodDMenu).
+	ui.AddItemsFormMenu(form, urlInput, methodDMenu).
 		AddButton("Make Request", func() {
 			app.SetTitle("Done!")
 
@@ -61,7 +78,6 @@ func main() {
 	//reqBody
 	jsonIsValid := ui.CreateNewDynamicTextView()
 	keyMap := ui.CreateNewDynamicTextView()
-	reqBody := ui.CreateBodyInput()
 
 	reqBody.SetBorder(true).SetTitle("Write the JSON here")
 
@@ -91,13 +107,6 @@ func main() {
 		}
 	})
 
-	reqBody.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyESC {
-			reqBody.Blur()
-		}
-		return event
-	})
-
 	reqBodyUtils := tview.NewGrid().
 		SetRows(0, 1).
 		AddItem(reqBody, 0, 0, 1, 2, 0, 0, true).
@@ -110,8 +119,6 @@ func main() {
 		AddItem(reqBodyUtils, 0, 5, false)
 
 	//! json response layout
-	headerView := ui.CreateNewDynamicTextView()
-	bodyView := ui.CreateNewDynamicTextView()
 
 	headerView.SetBorder(true).SetTitle("Response Header")
 	bodyView.SetBorder(true).SetTitle("Response Body")
@@ -128,36 +135,10 @@ func main() {
 		AddItem(flexRequest, 0, 1, true).
 		AddItem(flexResponse, 0, 1, false)
 
+	//? extras
+	SetVIMNavigationKeys(app)
+
 	if err := app.SetRoot(mainBox, true).Run(); err != nil {
 		slog.Error(err.Error())
 	}
-}
-
-// ? init funcs
-func init() {
-	err := LoggerLoad(LoggerDefaultPath(), slog.LevelDebug)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func init() {
-	newApp := tview.NewApplication()
-	newApp.EnableMouse(true)
-	newApp.SetTitle(ut.APP_NAME)
-
-	tview.Styles = tview.Theme{
-		// input
-		ContrastBackgroundColor:    tcell.ColorDarkRed,    //bg-color
-		PrimaryTextColor:           tcell.ColorWhiteSmoke, //text-color
-		ContrastSecondaryTextColor: tcell.ColorDimGray,    // placeholder-color
-		SecondaryTextColor:         tcell.ColorWhiteSmoke, //label-color
-
-		TitleColor:                  tcell.ColorGreenYellow,
-		MoreContrastBackgroundColor: tcell.ColorDarkRed, // menus-bg-color
-		BorderColor:                 tcell.ColorDarkSlateGray,
-	}
-
-	app = newApp
 }
