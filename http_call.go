@@ -10,8 +10,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
 )
 
 var (
@@ -36,7 +34,7 @@ func MakeHTTPCall() (*RequestJson, error) {
 		return nil, errorBadURL
 	}
 
-	method, ok := ut.HTTPMethodMap[GlobalFieldState.MethodField]
+	method, ok := HTTPMethodMap[GlobalFieldState.MethodField]
 
 	if !ok {
 		slog.Error("Error while parsing METHOD", "Method", GlobalFieldState.MethodField)

@@ -1,14 +1,13 @@
 package main
 
 import (
-	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type FieldState struct {
 	URLField    string
-	MethodField ut.HTTPMethod
+	MethodField HTTPMethod
 	Body        string
 }
 
@@ -18,7 +17,7 @@ var app *tview.Application
 func init() {
 	newApp := tview.NewApplication()
 	newApp.EnableMouse(true)
-	newApp.SetTitle(ut.APP_NAME)
+	newApp.SetTitle(APP_NAME)
 
 	tview.Styles = tview.Theme{
 		// input
@@ -33,8 +32,4 @@ func init() {
 	}
 
 	app = newApp
-}
-
-func init() {
-
 }

@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/Aragon-Joaquin/curlWrapper_CLI/ui"
-	ut "github.com/Aragon-Joaquin/curlWrapper_CLI/utils"
 	"github.com/rivo/tview"
 )
 
@@ -34,9 +32,9 @@ func init() {
 }
 
 func init() {
-	headerView = ui.CreateNewDynamicTextView()
-	bodyView = ui.CreateNewDynamicTextView()
-	reqBody = ui.CreateBodyInput()
+	headerView = CreateNewDynamicTextView()
+	bodyView = CreateNewDynamicTextView()
+	reqBody = CreateBodyInput()
 	form = tview.NewForm().
 		SetButtonsAlign(tview.AlignCenter)
 
@@ -47,24 +45,24 @@ func main() {
 	resChannel := make(chan *ChannelInformation)
 
 	//! creating the form
-	urlInput := ui.CreateURLInput().
+	urlInput := CreateURLInput().
 		SetChangedFunc(func(text string) {
 			slog.Debug("Input Text Changed: ", "TEXT", text)
 			GlobalFieldState.URLField = text
 		})
 
-	methodDMenu := ui.CreateDropDownMethods().
+	methodDMenu := CreateDropDownMethods().
 		SetSelectedFunc(func(text string, index int) {
 			slog.Debug("DropDown Changed: ", "TEXT", text, "INDEX", index)
-			GlobalFieldState.MethodField = ut.HTTPMethod(index)
+			GlobalFieldState.MethodField = HTTPMethod(index)
 		})
 
-	ui.AddItemsFormMenu(form, urlInput, methodDMenu).
+	AddItemsFormMenu(form, urlInput, methodDMenu).
 		AddButton("Make Request", func() {
 			app.SetTitle("Done!")
 
 			time.AfterFunc(time.Second*1, func() {
-				app.SetTitle(ut.APP_NAME)
+				app.SetTitle(APP_NAME)
 			})
 
 			go MakeRequest(resChannel)
@@ -73,19 +71,19 @@ func main() {
 			app.Stop()
 		})
 
-	form.SetBorder(true).SetTitle(ut.APP_NAME)
+	form.SetBorder(true).SetTitle(APP_NAME)
 
 	//reqBody
-	jsonIsValid := ui.CreateNewDynamicTextView()
-	keyMap := ui.CreateNewDynamicTextView()
+	jsonIsValid := CreateNewDynamicTextView()
+	keyMap := CreateNewDynamicTextView()
 
 	reqBody.SetBorder(true).SetTitle("Write the JSON here")
 
 	jsonIsValid.SetText("Waiting for input...")
 	jsonIsValid.SetTextAlign(tview.AlignCenter)
 
-	keyMap.SetText("<ESC> to Unfocus")
 	keyMap.SetTextAlign(tview.AlignCenter)
+	ChangeKeyMapMode(BLUR_KEY_HELP, keyMap)
 
 	reqBody.SetChangedFunc(func() {
 		//todo: add debouncer here
@@ -136,7 +134,7 @@ func main() {
 		AddItem(flexResponse, 0, 1, false)
 
 	//? extras
-	SetVIMNavigationKeys(app)
+	SetVIMNavigationKeys(app, keyMap)
 
 	if err := app.SetRoot(mainBox, true).Run(); err != nil {
 		slog.Error(err.Error())
