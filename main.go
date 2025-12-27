@@ -5,13 +5,14 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 // modules
 var (
 	form       *tview.Form
-	headerView *tview.TextView
+	respHeader *tview.Flex
 	reqBody    *tview.TextArea
 	bodyView   *tview.TextView
 )
@@ -25,19 +26,17 @@ type ChannelInformation struct {
 // ? init funcs
 func init() {
 	err := LoggerLoad(LoggerDefaultPath(), slog.LevelDebug)
-
 	if err != nil {
 		panic(err)
 	}
 }
 
 func init() {
-	headerView = CreateNewDynamicTextView()
+	respHeader = tview.NewFlex()
 	bodyView = CreateNewDynamicTextView()
 	reqBody = CreateBodyInput()
 	form = tview.NewForm().
 		SetButtonsAlign(tview.AlignCenter)
-
 }
 
 // ? entry point
@@ -71,9 +70,9 @@ func main() {
 			app.Stop()
 		})
 
-	form.SetBorder(true).SetTitle(APP_NAME)
+	form.SetBorder(true).SetTitle(APP_NAME).SetBorderColor(tcell.ColorDimGray)
 
-	//reqBody
+	// reqBody
 	jsonIsValid := CreateNewDynamicTextView()
 	keyMap := CreateNewDynamicTextView()
 
@@ -86,7 +85,7 @@ func main() {
 	ChangeKeyMapMode(BLUR_KEY_HELP, keyMap)
 
 	reqBody.SetChangedFunc(func() {
-		//todo: add debouncer here
+		// todo: add debouncer here
 		text := reqBody.GetText()
 
 		jsonIsValid.SetText("")
@@ -113,19 +112,19 @@ func main() {
 
 	flexRequest := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(form, 0, 1, true).
+		AddItem(form, 0, 2, true).
 		AddItem(reqBodyUtils, 0, 5, false)
 
-	//! json response layout
+		//! json response layout
 
-	headerView.SetBorder(true).SetTitle("Response Header")
+	respHeader.SetDirection(tview.FlexColumn).SetBorder(true).SetTitle("Response Header")
 	bodyView.SetBorder(true).SetTitle("Response Body")
 
-	go RenderResponse(resChannel, bodyView, headerView)
+	go RenderResponse(resChannel, bodyView, respHeader)
 
 	flexResponse := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(headerView, 0, 1, true).
+		AddItem(respHeader, 0, 1, true).
 		AddItem(bodyView, 0, 10, true)
 
 	// final layout

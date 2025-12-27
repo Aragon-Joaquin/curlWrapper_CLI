@@ -27,13 +27,12 @@ type borderColorInterface interface {
 }
 
 func SetVIMNavigationKeys(app *tview.Application, keyMapText *tview.TextView) {
-
-	sliceOfItems := []tview.Primitive{form, headerView, reqBody, bodyView}
+	sliceOfItems := []tview.Primitive{form, respHeader, reqBody, bodyView}
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		slog.Debug("key pressed", "Key", event.Rune(), "KeyString", event.Key())
 
 		if event.Key() == tcell.KeyESC && !navigationBox.HasFocus() {
-			app.SetFocus(navigationBox) //loose focus of everything
+			app.SetFocus(navigationBox) // loose focus of everything
 			ChangeKeyMapMode(FOCUS_KEY_HELP, keyMapText)
 
 			return event
@@ -52,7 +51,7 @@ func SetVIMNavigationKeys(app *tview.Application, keyMapText *tview.TextView) {
 		if navigationBox.HasFocus() && event.Key() == tcell.KeyEnter {
 			navigationBox.Blur()
 			ChangeKeyMapMode(BLUR_KEY_HELP, keyMapText)
-			prevBox.SetBorderColor(tcell.ColorDarkSlateGray)
+			prevBox.SetBorderColor(tcell.ColorDimGray)
 			app.SetFocus(sliceOfItems[currentFocus])
 			return event
 		}
@@ -83,6 +82,9 @@ func SetVIMNavigationKeys(app *tview.Application, keyMapText *tview.TextView) {
 				currentFocus += 1
 			}
 
+		case 'q':
+			app.Stop()
+
 		default:
 			return event
 		}
@@ -96,6 +98,5 @@ func SetVIMNavigationKeys(app *tview.Application, keyMapText *tview.TextView) {
 		}
 
 		return event
-
 	})
 }
